@@ -1,0 +1,63 @@
+# generate all samples list
+
+bcftools query -l n111_filtered_4_noref_pruned.vcf > samples
+
+# make list for each locality
+grep "TRIS" samples > TRIS 
+grep "AMST" samples > AMST 
+grep "CHAT" samples > CHAT 
+grep "MACQ" samples > MACQ 
+grep "KERG" samples > KERG 
+grep "CROZ" samples > CROZ 
+grep "MARI" samples > MARI 
+grep "BOUV" samples > BOUV 
+grep "GEOR" samples > GEOR 
+grep "SHET" samples > SHET 
+grep "DEVL" samples > DEVL 
+grep "LGTL" samples > LGTL 
+grep "ROSS" samples > ROSS 
+grep "CASS" samples > CASS 
+grep "DAVS" samples > DAVS 
+grep "MAWS" samples > MAWS 
+grep "HORN" samples > HORN 
+grep "BECA" samples > BECA 
+grep "MAGD" samples > MAGD 
+grep "FKMV" samples > FKMV 
+grep "BLAN" samples > BLAN
+
+# make list for each of the 7 phylogeographic groups.
+cat DEVL LGTL > ANTP 
+cat CASS DAVS MAWS ROSS > ANTC
+cat BOUV GEOR SHET > SAPF
+cat MACQ KERG CROZ MARI CHAT > NAPF 
+cat TRIS AMST > NSTF 
+cat BECA MAGD HORN > CHIL 
+cat FKMV BLAN > FKLD
+
+#Run:
+
+z_split_vcf_final_n111.sh
+#!/bin/bash
+cd /data2/lab2/skuas/tajima
+for i in ANTC ANTP CHIL FKLD NAPF NSTF SAPF;
+do echo $i ;
+bcftools view -S ${i} -Oz -o ${i}.vcf.gz n111_filtered_4_noref_pruned.vcf
+done
+
+z_Tajima_n111.sh
+#!/bin/bash
+cd /data2/lab2/skuas/tajima
+for i in ANTC ANTP CHIL FKLD NAPF NSTF SAPF;
+do echo $i ;
+bash TajimaSlide.sh $i
+done
+
+TajimaSlide.sh
+#!/bin/bash
+cd /data2/lab2/skuas/tajima
+gunzip ${1}.vcf.gz ;
+vk tajima 50,000 25,000 ${1}.vcf > ${1}_Tajima_sliding  ;
+gzip ${1}.vcf ;
+
+
+

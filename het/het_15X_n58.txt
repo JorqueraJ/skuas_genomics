@@ -1,0 +1,47 @@
+#Genome-wide heterozygosity of 58 skua individuals calculated using only high coverage sequencing data (14-15X).
+
+split_het_15X.sh
+#!/bin/bash
+source activate handsonVCF
+cd /data2/lab2/skuas/heterozygosity_15X
+
+bcftools view -S AMST --threads 1 -O z -o AMST.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S BECA --threads 1 -O z -o BECA.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S BOUV --threads 1 -O z -o BOUV.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S CASS --threads 1 -O z -o CASS.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S CROZ --threads 1 -O z -o CROZ.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S DAVS --threads 1 -O z -o DAVS.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S DEVL --threads 1 -O z -o DEVL.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S FKMV --threads 1 -O z -o FKMV.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S GEOR --threads 1 -O z -o GEOR.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S HORN --threads 1 -O z -o HORN.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S KERG --threads 1 -O z -o KERG.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S LGTL --threads 1 -O z -o LGTL.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S MACQ --threads 1 -O z -o MACQ.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S MAGD --threads 1 -O z -o MAGD.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S MARI --threads 1 -O z -o MARI.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S MAWS --threads 1 -O z -o MAWS.vcf.gz n58_filtered4_pruned_newID.vcf
+bcftools view -S SHET --threads 1 -O z -o SHET.vcf.gz n58_filtered4_pruned_newID.vcf
+
+het_15X.sh
+#!/bin/bash
+source activate handsonVCF
+cd /data2/lab2/skuas/heterozygosity_15X
+for i in AMST BECA BOUV CASS CROZ DAVS DEVL FKMV GEOR HORN KERG LGTL MACQ MAGD MARI MAWS SHET;
+do echo $i ;
+vcftools --gzvcf ${i}.vcf.gz --het --out ${i}_heterozygosity ;
+done
+
+
+het_manual_15X.sh
+#!/bin/bash
+source activate handsonVCF
+cd /data2/lab2/skuas/heterozygosity_15X
+touch Heterozygosity_manual.txt
+cat samples | while read line ;
+do echo ${line} ;
+bcftools view -s ${line} -O z -o ${line}.vcf.gz n58_filtered4_pruned_newID.vcf ;
+Hetero=$(zcat ${line}.vcf.gz | grep -v "#" | grep "0/1" | wc -l)
+Total=$(zcat ${line}.vcf.gz | grep -v "#" | wc -l)
+echo -e "${line}\t${Hetero}\t${Total}" >> Heterozygosity_manual.txt
+done

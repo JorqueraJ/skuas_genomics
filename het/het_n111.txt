@@ -1,0 +1,50 @@
+#Average local heterozygosity of skua across all samples 
+
+split_het.sh
+#!/bin/bash
+cd /data2/lab2/skuas/heterozygosity
+
+bcftools view -S TRIS --threads 1 -O z -o TRIS.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S AMST --threads 1 -O z -o AMST.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S CHAT --threads 1 -O z -o CHAT.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S MACQ --threads 1 -O z -o MACQ.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S KERG --threads 1 -O z -o KERG.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S CROZ --threads 1 -O z -o CROZ.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S MARI --threads 1 -O z -o MARI.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S BOUV --threads 1 -O z -o BOUV.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S GEOR --threads 1 -O z -o GEOR.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S SHET --threads 1 -O z -o SHET.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S DEVL --threads 1 -O z -o DEVL.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S LGTL --threads 1 -O z -o LGTL.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S ROSS --threads 1 -O z -o ROSS.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S CASS --threads 1 -O z -o CASS.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S DAVS --threads 1 -O z -o DAVS.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S MAWS --threads 1 -O z -o MAWS.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S HORN --threads 1 -O z -o HORN.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S BECA --threads 1 -O z -o BECA.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S MAGD --threads 1 -O z -o MAGD.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S FKMV --threads 1 -O z -o FKMV.vcf.gz n111_filtered4_pruned_newID.vcf
+bcftools view -S BLAN --threads 1 -O z -o BLAN.vcf.gz n111_filtered4_pruned_newID.vcf
+
+
+het.sh
+#!/bin/bash
+cd /data2/lab2/skuas/heterozygosity
+for i in TRIS AMST CHAT MACQ KERG CROZ MARI BOUV GEOR SHET DEVL LGTL ROSS CASS DAVS MAWS HORN BECA MAGD FKMV BLAN;
+do echo $i ;
+vcftools --gzvcf ${i}.vcf.gz --het --out ${i}_heterozygosity ;
+done
+
+
+STEP3_het_manual.sh
+#!/bin/bash
+cd /data2/lab2/skuas/heterozygosity
+touch Heterozygosity_manual.txt
+cat samples | while read line ;
+do echo ${line} ;
+bcftools view -s ${line} -O z -o ${line}.vcf.gz n111_filtered4_pruned_newID.vcf ;
+Hetero=$(zcat ${line}.vcf.gz | grep -v "#" | grep "0/1" | wc -l)
+Total=$(zcat ${line}.vcf.gz | grep -v "#" | wc -l)
+echo -e "${line}\t${Hetero}\t${Total}" >> Heterozygosity_manual.txt
+done
+

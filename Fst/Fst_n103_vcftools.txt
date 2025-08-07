@@ -1,0 +1,147 @@
+#PRUNED VCF n103 all coverage
+
+####################
+##FST per locality##
+####################
+
+#CHAT(n=3), HORN(n=2) and BLAN(n=3) not considered due to low n
+# generate all the sample names
+
+bcftools query -l n103_filtered4_pruned_newID.vcf.gz > samples
+
+grep "TRIS" samples > TRIS | grep "AMST" samples > AMST | grep "MACQ" samples > MACQ | grep "KERG" samples > KERG | grep "CROZ" samples > CROZ | grep "MARI" samples > MARI | grep "BOUV" samples > BOUV | grep "GEOR" samples > GEOR | grep "SHET" samples > SHET | grep "DEVL" samples > DEVL | grep "LGTL" samples > LGTL | grep "ROSS" samples > ROSS | grep "CASS" samples > CASS | grep "DAVS" samples > DAVS | grep "MAWS" samples > MAWS | grep "BECA" samples > BECA | grep "MAGD" samples > MAGD | grep "FKMV" samples > FKMV
+
+#GLOBAL FST
+1_fst_populations.sh
+#!/bin/bash
+source activate handsonVCF
+cd /data2/lab2/skuas/Fst
+# Define your populations in an array
+populations=(TRIS AMST MACQ KERG CROZ MARI BOUV GEOR SHET DEVL LGTL ROSS CASS DAVS MAWS BECA MAGD FKMV)
+
+# Loop through all pairs of populations
+for ((i=0; i<${#populations[@]}-1; i++)); do
+  for ((j=i+1; j<${#populations[@]}; j++)); do
+    pop1=${populations[$i]}
+    pop2=${populations[$j]}
+    
+    # Run vcftools Fst calculation
+    vcftools --gzvcf n103_filtered4_pruned_newID.vcf.gz \
+    --weir-fst-pop $pop1 \
+    --weir-fst-pop $pop2 \
+    --out ./Fst_${pop1}_${pop2}
+  done
+done
+
+#SLIDING WINDOW
+#50 Kb sliding windows with a 25 Kb
+
+1_fst_populations_sliding.sh
+
+#!/bin/bash
+source activate handsonVCF
+cd /data2/lab2/skuas/Fst
+# Define your populations in an array
+populations=(TRIS AMST MACQ KERG CROZ MARI BOUV GEOR SHET DEVL LGTL ROSS CASS DAVS MAWS BECA MAGD FKMV)
+
+# Loop through all pairs of populations
+for ((i=0; i<${#populations[@]}-1; i++)); do
+  for ((j=i+1; j<${#populations[@]}; j++)); do
+    pop1=${populations[$i]}
+    pop2=${populations[$j]}
+    
+    # Run vcftools Fst calculation
+    vcftools --gzvcf n103_filtered4_pruned_newID.vcf.gz \
+    --weir-fst-pop $pop1 \
+    --weir-fst-pop $pop2 \
+    --fst-window-size 50000 --fst-window-step 25000 \
+    --out ./Fst_${pop1}_${pop2}_sliding
+  done
+done
+
+
+####################
+##FST per province##
+####################
+
+#GLOBAL FST
+
+cat BOUV GEOR SHET  > SAPF | cat MACQ KERG CROZ MARI > NAPF | cat TRIS AMST > NSTF | cat DEVL LGTL > ANTP | cat ROSS CASS DAVS MAWS > ANTC | cat BECA MAGD > CHIL | cat FKMV > FKLD
+
+2_fst_provinces.sh 
+nohup ./2_fst_provinces.sh > 2_fst_provinces.out &
+#!/bin/bash
+source activate handsonVCF
+cd /data2/lab2/skuas/Fst
+# Define your populations in an array
+populations=(SAPF NAPF NSTF ANTP ANTC CHIL FKLD)
+
+# Loop through all pairs of populations
+for ((i=0; i<${#populations[@]}-1; i++)); do
+  for ((j=i+1; j<${#populations[@]}; j++)); do
+    pop1=${populations[$i]}
+    pop2=${populations[$j]}
+    
+    # Run vcftools Fst calculation
+    vcftools --gzvcf n103_filtered4_pruned_newID.vcf.gz \
+    --weir-fst-pop $pop1 \
+    --weir-fst-pop $pop2 \
+    --out ./Fst_${pop1}_${pop2}
+  done
+done
+
+
+#SLIDING WINDOW
+#50 Kb sliding windows with a 25 Kb
+
+2_fst_provinces_sliding.sh
+nohup ./2_fst_provinces_sliding.sh > 2_fst_provinces_sliding.out &
+#!/bin/bash
+source activate handsonVCF
+cd /data2/lab2/skuas/Fst
+# Define your populations in an array
+populations=(SAPF NAPF NSTF ANTP ANTC CHIL FKLD)
+
+# Loop through all pairs of populations
+for ((i=0; i<${#populations[@]}-1; i++)); do
+  for ((j=i+1; j<${#populations[@]}; j++)); do
+    pop1=${populations[$i]}
+    pop2=${populations[$j]}
+    
+    # Run vcftools Fst calculation
+    vcftools --gzvcf n103_filtered4_pruned_newID.vcf.gz \
+    --weir-fst-pop $pop1 \
+    --weir-fst-pop $pop2 \
+    --fst-window-size 50000 --fst-window-step 25000 \
+    --out ./Fst_${pop1}_${pop2}_sliding
+  done
+done
+
+
+#### Average
+
+#!/bin/bash
+
+# Change to the directory with the files
+cd /data2/lab2/skuas/Fst
+# Define the list of files
+files="
+# Loop through each file
+for file in $files; do
+    # Use awk to sum the values and count the number of valid (non-nan) entries
+    sum=$(awk '$3 != "-nan" {sum += $3} END {print sum}' "$file")
+    count=$(awk '$3 != "-nan" {count++} END {print count}' "$file")
+
+    # Calculate the average
+    if [ "$count" -gt 0 ]; then
+        average=$(echo "$sum / $count" | bc -l)
+        echo "File: $file"
+        echo "Sum of WEIR_AND_COCKERHAM_FST: $sum"
+        echo "Average of WEIR_AND_COCKERHAM_FST: $average"
+        echo "-----------------------------------"
+    else
+        echo "File: $file"
+        echo "No valid entries found."
+        echo "-----------------------------------"
+    fi
+done
