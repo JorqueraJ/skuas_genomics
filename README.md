@@ -10,7 +10,7 @@ If you use the data or code from this study, please cite the original publicatio
 
 ## Data Availability
 
-Raw whole-genome sequencing reads are available in the GenBank database. Accession numbers can be found under BioSamples[cite: 917]:
+Raw whole-genome sequencing reads are available in the GenBank database. Accession numbers can be found under BioSamples:
 * SAMN38698868-SAMN38698944 
 * SAMN43185484-SAMN43185490 
 * SAMN35654692-SAMN35654709 
